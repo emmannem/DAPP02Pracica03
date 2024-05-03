@@ -32,16 +32,20 @@ public class ControllerEmpleado {
     @GetMapping()
     public List<Empleado> list() {
         List<Empleado> lstEmpleado = repositoryEmpleado.findAll();
-        return lstEmpleado;
+        if (!lstEmpleado.isEmpty()) {
+            return lstEmpleado;
+        } else {
+            return null;
+        }
     }
 
     @GetMapping("/{id}")
     public Object get(@PathVariable Long id) {
         Optional<Empleado> optEmpleado = repositoryEmpleado.findById(id);
         if (optEmpleado.isPresent()) {
-            return optEmpleado;
+            return ResponseEntity.ok().body(optEmpleado);
         } else {
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -72,11 +76,16 @@ public class ControllerEmpleado {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Empleado> delete(@PathVariable Long id) {
-        try {
-            repositoryEmpleado.deleteById(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        Optional<Empleado> optEmpleado = repositoryEmpleado.findById(id);
+        if (optEmpleado.isPresent()) {
+            try {
+                repositoryEmpleado.deleteById(id);
+                return ResponseEntity.ok().build();
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
